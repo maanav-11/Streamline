@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install Dependencies
+      run: |
+        cd client && npm install
+        cd ../server && npm install
+        cd ../shared && npm install
+        
+    # TODO: Add linting and testing steps as they are implemented
+    # - name: Run ESLint
+    #   run: ...
+    # - name: Run Vitest
+    #   run: ...

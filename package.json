@@ -1,0 +1,27 @@
+{
+  "name": "streamline",
+  "version": "1.0.0",
+  "description": "Streamline is a web platform where you connect your data — however it arrives — and it immediately turns into live, visual dashboards that update in real time. No spreadsheets. No scripts. No emails. You send someone a link, they open a browser, and they see their numbers moving as they happen.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maanav-11/Streamline.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/maanav-11/Streamline/issues"
+  },
+  "homepage": "https://github.com/maanav-11/Streamline#readme",
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
+    "prettier": "^3.9.5",
+    "vitest": "^3.2.7"
+  }
+}
