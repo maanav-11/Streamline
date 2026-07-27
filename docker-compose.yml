@@ -44,6 +44,7 @@ services:
     environment:
       - VITE_API_URL=http://localhost:5000/api/v1
       - VITE_SOCKET_URL=http://localhost:5000
+      - VITE_API_PROXY_TARGET=http://api:5000
     depends_on:
       - api
 
