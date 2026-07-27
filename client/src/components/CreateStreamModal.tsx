@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Radio, Plus, Copy, Check, Terminal, Loader2 } from 'lucide-react';
 import { useWorkspaceStore, type StreamItem } from '../store/workspaceStore';
 
@@ -13,8 +13,20 @@ export function CreateStreamModal({ isOpen, onClose }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdStream, setCreatedStream] = useState<StreamItem | null>(null);
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const createStream = useWorkspaceStore((state) => state.createStream);
+
+  // Reset modal state whenever modal is opened
+  useEffect(() => {
+    if (isOpen) {
+      setName('');
+      setDescription('');
+      setCreatedStream(null);
+      setError(null);
+      setIsSubmitting(false);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -22,10 +34,18 @@ export function CreateStreamModal({ isOpen, onClose }: Props) {
     e.preventDefault();
     if (!name.trim()) return;
     setIsSubmitting(true);
-    const stream = await createStream(name.trim(), description.trim());
-    setIsSubmitting(false);
-    if (stream) {
-      setCreatedStream(stream);
+    setError(null);
+    try {
+      const stream = await createStream(name.trim(), description.trim());
+      setIsSubmitting(false);
+      if (stream) {
+        setCreatedStream(stream);
+      } else {
+        setError('Failed to create stream endpoint. Please check permissions and try again.');
+      }
+    } catch (err: any) {
+      setIsSubmitting(false);
+      setError(err.response?.data?.message || 'Error generating stream endpoint');
     }
   };
 
@@ -90,6 +110,11 @@ requests.post(
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <div className="p-3 bg-red-950/60 border border-red-500/30 text-red-300 text-xs rounded-xl">
+                  {error}
+                </div>
+              )}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
                   Stream Name

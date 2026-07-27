@@ -17,6 +17,7 @@ export function useSocket(workspaceId: string | undefined) {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
+    setEvents([]);
     if (!workspaceId) return;
 
     const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';

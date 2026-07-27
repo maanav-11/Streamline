@@ -84,7 +84,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
   setActiveWorkspace: (workspace: Workspace) => {
     localStorage.setItem('activeWorkspaceId', workspace._id);
-    set({ activeWorkspace: workspace });
+    set({ activeWorkspace: workspace, streams: [] });
     get().fetchStreams(workspace._id);
     get().fetchRole(workspace._id);
   },
