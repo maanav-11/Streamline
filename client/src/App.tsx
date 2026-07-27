@@ -42,7 +42,7 @@ function Dashboard() {
   const logout = useAuthStore((state) => state.logout);
 
   const { 
-    workspaces, activeWorkspace, streams, 
+    workspaces, activeWorkspace, userRole, streams, 
     fetchWorkspaces, setActiveWorkspace, addStreamEvent 
   } = useWorkspaceStore();
 
@@ -205,13 +205,33 @@ function Dashboard() {
 
             {/* Right Status & Action Controls */}
             <div className="flex items-center gap-2 sm:gap-3">
-              <button
-                onClick={() => setIsInviteModalOpen(true)}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 bg-slate-950 hover:bg-slate-800 transition-all cursor-pointer"
-              >
-                <UserPlus className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Invite Team</span>
-              </button>
+              {/* Logged-In User Profile & Role Badge */}
+              <div className="flex items-center gap-2 px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-xl text-xs">
+                <div className="w-6 h-6 rounded-full bg-indigo-600/30 text-indigo-400 font-bold flex items-center justify-center text-[11px] border border-indigo-500/30">
+                  {user?.name ? user.name[0].toUpperCase() : 'U'}
+                </div>
+                <div className="hidden md:flex flex-col text-left">
+                  <span className="font-bold text-slate-200 leading-none">{user?.name || user?.email}</span>
+                  <span className="text-[10px] text-slate-400 leading-tight truncate max-w-[120px]">{user?.email}</span>
+                </div>
+                <span className={`px-2 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-wider ${
+                  userRole === 'owner' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' :
+                  userRole === 'editor' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
+                  'bg-slate-800 text-slate-400 border border-slate-700'
+                }`}>
+                  {userRole === 'owner' ? '👑 Owner' : userRole === 'editor' ? '✏️ Editor' : '👁️ Viewer'}
+                </span>
+              </div>
+
+              {userRole === 'owner' && (
+                <button
+                  onClick={() => setIsInviteModalOpen(true)}
+                  className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 bg-slate-950 hover:bg-slate-800 transition-all cursor-pointer"
+                >
+                  <UserPlus className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Invite Team</span>
+                </button>
+              )}
 
               <button
                 onClick={() => setIsSettingsModalOpen(true)}
@@ -275,13 +295,19 @@ function Dashboard() {
               {isSimulating ? 'Ingesting...' : 'Simulate Live Event'}
             </button>
 
-            <button
-              onClick={() => setIsStreamModalOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs sm:text-sm rounded-xl transition-all shadow-lg shadow-indigo-600/20 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              New Stream Endpoint
-            </button>
+            {userRole !== 'viewer' ? (
+              <button
+                onClick={() => setIsStreamModalOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs sm:text-sm rounded-xl transition-all shadow-lg shadow-indigo-600/20 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                New Stream Endpoint
+              </button>
+            ) : (
+              <span className="text-xs text-slate-400 font-semibold px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl">
+                👁️ Read-Only View Access
+              </span>
+            )}
           </div>
         </div>
 

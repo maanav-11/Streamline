@@ -21,6 +21,7 @@ export interface StreamItem {
 interface WorkspaceState {
   workspaces: Workspace[];
   activeWorkspace: Workspace | null;
+  userRole: 'owner' | 'editor' | 'viewer';
   streams: StreamItem[];
   isLoading: boolean;
   error: string | null;
@@ -28,6 +29,7 @@ interface WorkspaceState {
   createWorkspace: (name: string) => Promise<Workspace | null>;
   setActiveWorkspace: (workspace: Workspace) => void;
   fetchStreams: (workspaceId: string) => Promise<void>;
+  fetchRole: (workspaceId: string) => Promise<void>;
   createStream: (name: string, description?: string) => Promise<StreamItem | null>;
   addStreamEvent: (streamKey: string) => void;
 }
@@ -35,6 +37,7 @@ interface WorkspaceState {
 export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   workspaces: [],
   activeWorkspace: null,
+  userRole: 'owner',
   streams: [],
   isLoading: false,
   error: null,
@@ -50,6 +53,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         localStorage.setItem('activeWorkspaceId', active._id);
         set({ activeWorkspace: active });
         get().fetchStreams(active._id);
+        get().fetchRole(active._id);
       } else {
         // Automatically provision a default workspace if user has none
         await get().createWorkspace('My Workspace');
@@ -67,6 +71,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       set((state) => ({
         workspaces: [...state.workspaces, data],
         activeWorkspace: data,
+        userRole: 'owner',
         isLoading: false,
       }));
       get().fetchStreams(data._id);
@@ -81,6 +86,31 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     localStorage.setItem('activeWorkspaceId', workspace._id);
     set({ activeWorkspace: workspace });
     get().fetchStreams(workspace._id);
+    get().fetchRole(workspace._id);
+  },
+
+  fetchRole: async (workspaceId: string) => {
+    try {
+      const active = get().activeWorkspace;
+      const userStr = localStorage.getItem('user');
+      const currentUser = userStr ? JSON.parse(userStr) : null;
+      if (active && currentUser && active.ownerId === currentUser._id) {
+        set({ userRole: 'owner' });
+        return;
+      }
+      const { data } = await axios.get<any[]>(`/api/workspaces/${workspaceId}/members`);
+      if (currentUser) {
+        const myMembership = data.find((m) => (m.userId?._id || m.userId) === currentUser._id);
+        if (myMembership?.role) {
+          set({ userRole: myMembership.role });
+          return;
+        }
+      }
+      set({ userRole: 'viewer' });
+    } catch (err) {
+      console.error('Fetch role error:', err);
+      set({ userRole: 'viewer' });
+    }
   },
 
   fetchStreams: async (workspaceId: string) => {
