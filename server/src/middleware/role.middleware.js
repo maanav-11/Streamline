@@ -1,4 +1,5 @@
 import { Membership } from '../features/workspaces/models/Membership.js';
+import { Workspace } from '../features/workspaces/models/Workspace.js';
 
 export const checkRole = (...allowedRoles) => {
   return async (req, res, next) => {
@@ -8,6 +9,21 @@ export const checkRole = (...allowedRoles) => {
 
       if (!userId || !workspaceId) {
         return res.status(400).json({ message: 'Missing user or workspace identifier' });
+      }
+
+      // Check if user is the direct owner of the workspace
+      const workspace = await Workspace.findById(workspaceId);
+      if (workspace && workspace.ownerId && workspace.ownerId.toString() === userId.toString()) {
+        let membership = await Membership.findOne({ userId, workspaceId });
+        if (!membership || membership.role !== 'owner') {
+          membership = await Membership.findOneAndUpdate(
+            { userId, workspaceId },
+            { role: 'owner' },
+            { upsert: true, new: true }
+          );
+        }
+        req.membership = membership;
+        return next();
       }
 
       const membership = await Membership.findOne({ userId, workspaceId });

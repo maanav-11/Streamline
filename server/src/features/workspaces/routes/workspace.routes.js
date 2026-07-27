@@ -15,7 +15,7 @@ router.get('/', getWorkspaces);
 router.get('/:id', getWorkspaceById);
 
 // Member management & RBAC guards
-router.post('/:id/invite', checkRole('owner'), inviteMember);
+router.post('/:id/invite', checkRole('owner', 'editor'), inviteMember);
 router.get('/:id/members', checkRole('owner', 'editor', 'viewer'), getWorkspaceMembers);
 router.post('/accept-invite', acceptInvite);
 
